@@ -197,6 +197,8 @@ def coordinator(params: dict, args: Namespace):
         train_time_per_epoch=train_time_per_epoch,
         only_phase1=only_phase1)
 
+    logger.info(f"coordinator done with K, U, N with {K, U, N}")
+
     return orjson.dumps(
         {"k": K, "u": U, "n": N}).decode('utf-8')
 

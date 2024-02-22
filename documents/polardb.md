@@ -15,6 +15,8 @@ docker pull polardb/polardb_pg_local_instance
 docker run -d --rm --name polardb_instance \
   --network="host" \
   -v /hdd1/sams/:/home/postgres/dataset/ polardb/polardb_pg_local_instance
+  
+docker run -d --rm --name polardb_instance polardb/polardb_pg_local_instance
 ```
 
 # Load dataset
