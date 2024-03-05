@@ -1,18 +1,19 @@
 #!/bin/bash
 
 # Check for proper number of command line args
-if [[ $# -ne 2 ]]; then
-    echo "Usage: $0 <data_path> <db_name>"
+if [[ $# -ne 3 ]]; then
+    echo "Usage: $0 <data_path> <db_name> <port>"
     exit 1
 fi
 
 # Configurations
 DATA_PATH="$1"
 DB_NAME="$2"
+PORT="$3"
 
 # Connection details
 HOST="localhost"
-PORT="28814"
+#PORT="28814"
 USERNAME="postgres"
 DBNAME="pg_extension"
 

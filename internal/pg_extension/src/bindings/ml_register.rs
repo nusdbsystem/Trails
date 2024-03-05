@@ -2,6 +2,8 @@ use log::error;
 use once_cell::sync::Lazy;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
+use std::env;
+use pyo3::types::PyList;
 
 
 pub fn run_python_function(
@@ -11,6 +13,12 @@ pub fn run_python_function(
 ) -> serde_json::Value {
     let parameters_str = parameters.to_string();
     let results = Python::with_gil(|py| -> String {
+
+        // load package such that it can import python packages, we do this onyl for integrate with polarDB env
+        let sys_module = py.import("sys").unwrap();
+        let sys_path: &PyList = sys_module.getattr("path").unwrap().downcast().unwrap();
+        sys_path.append("/home/postgres/Trails/internal/ml/model_selection/").unwrap();
+
         let run_script: Py<PyAny> = py_module.getattr(py, function_name).unwrap().into();
         let result = run_script.call1(
             py,

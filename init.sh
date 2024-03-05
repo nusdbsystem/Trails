@@ -16,7 +16,7 @@ done
 psql -h localhost -p 28814 -U postgres -d pg_extension -c "CREATE EXTENSION pg_extension;"
 psql -h localhost -p 28814 -U postgres -d pg_extension -f /project/Trails/internal/pg_extension/sql/model_selection_cpu.sql
 # Load example dataset into database
-bash /project/Trails/internal/ml/model_selection/scripts/database/load_data_to_db.sh /project/Trails/dataset/frappe frappe
+bash /project/Trails/internal/ml/model_selection/scripts/database/load_data_to_db.sh /project/Trails/dataset/frappe frappe 28814
 
 # Continue with the rest of your container's CMD
 tail -f /dev/null

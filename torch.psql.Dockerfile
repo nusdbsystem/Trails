@@ -58,6 +58,7 @@ ARG CACHEBUST=1
 # Clone code to there, install dependences,
 WORKDIR /project
 RUN git clone https://github.com/NLGithubWP/Trails.git && \
+    cp ./Trails/internal/pg_extension/template/Cargo.pg14.toml ./Trails/internal/pg_extension/Cargo.toml && \
     cd ./Trails/internal/ml/model_selection && \
     pip install -r requirement.txt
 

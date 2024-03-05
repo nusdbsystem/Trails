@@ -12,9 +12,63 @@ from argparse import Namespace
 from shared_config import parse_config_arguments
 
 
+def try_torch():
+    import torch
+    import math
+    dtype = torch.float
+    # Determine the device ("cuda" or "cpu")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # Create tensors on the specified device
+    x = torch.linspace(-math.pi, math.pi, 2000, device=device, dtype=dtype)
+    y = torch.sin(x)
+
+    # Initialize parameters a, b, c, d on the specified device
+    a = torch.randn((), device=device, dtype=dtype, requires_grad=True)
+    b = torch.randn((), device=device, dtype=dtype, requires_grad=True)
+    c = torch.randn((), device=device, dtype=dtype, requires_grad=True)
+    d = torch.randn((), device=device, dtype=dtype, requires_grad=True)
+
+    learning_rate = 1e-6
+    for t in range(2000):
+        # Forward pass: compute predicted y
+        y_pred = a + b * x + c * x ** 2 + d * x ** 3
+
+        # Compute and print loss every 100 steps
+        loss = (y_pred - y).pow(2).sum()
+        if t % 100 == 99:
+            print(t, loss.item())
+
+        # Backprop to compute gradients of a, b, c, d with respect to loss
+        loss.backward()
+
+        # Use torch.no_grad() to prevent tracking history on tensors
+        with torch.no_grad():
+            a -= learning_rate * a.grad
+            b -= learning_rate * b.grad
+            c -= learning_rate * c.grad
+            d -= learning_rate * d.grad
+
+            # Manually zero the gradients after updating weights
+            a.grad = None
+            b.grad = None
+            c.grad = None
+            d.grad = None
+
+    return f'Result: y = {a.item()} + {b.item()} x + {c.item()} x^2 + {d.item()} x^3'
+
+
+ONLINE_TEST = True
+
+
 def exception_catcher(func):
     def wrapper(encoded_str: str):
+        global_res = "NA, "
+        global ONLINE_TEST
         try:
+            if ONLINE_TEST:
+                global_res += try_torch()
+                ONLINE_TEST = False
             # each functon accepts a json string
             params = json.loads(encoded_str)
             config_file = params.get("config_file")
@@ -29,10 +83,11 @@ def exception_catcher(func):
             os.environ.setdefault("log_file_name", args.log_name + "_" + str(ts) + ".log")
 
             # Call the original function with the parsed parameters
-            return func(params, args)
+            global_res = func(params, args)
+            return global_res
         except Exception as e:
             return orjson.dumps(
-                {"Errored": traceback.format_exc()}).decode('utf-8')
+                {"res": global_res, "Errored": traceback.format_exc()}).decode('utf-8')
 
     return wrapper
 
@@ -176,6 +231,7 @@ def profiling_refinement_phase(params: dict, args: Namespace):
 @exception_catcher
 def coordinator(params: dict, args: Namespace):
     from src.logger import logger
+
     logger.info(f"begin run coordinator")
 
     budget = float(params["budget"])
@@ -249,7 +305,7 @@ def model_selection_workloads(params: dict, args: Namespace):
     dataloader = generate_dataloader(mini_batch_data=mini_batch_data, args=args)
     rms = RunModelSelection(args.search_space, args, is_simulate=args.is_simulate)
     k_models, _, _, _ = rms.filtering_phase(N=n, K=k, train_loader=dataloader)
-    best_arch, best_arch_performance, _ , _= rms.refinement_phase(
+    best_arch, best_arch_performance, _, _ = rms.refinement_phase(
         U=1,
         k_models=k_models,
         train_loader=dataloader,
@@ -518,7 +574,7 @@ def in_db_filtering_evaluate(params: dict, args: Namespace):
         # logger.info(list(mini_batch[0]))
 
         logger.info(f"Data Retrievel time {params['spi_seconds']}, "
-                    f"read shared memory time = {read_done-begin_read}")
+                    f"read shared memory time = {read_done - begin_read}")
 
         sampled_result = json.loads(params["sample_result"])
         arch_id, model_encoding = str(sampled_result["arch_id"]), str(sampled_result["model_encoding"])
@@ -529,7 +585,7 @@ def in_db_filtering_evaluate(params: dict, args: Namespace):
         model_acquire_data = ModelAcquireData(model_id=arch_id,
                                               model_encoding=model_encoding,
                                               is_last=False,
-                                              spi_seconds=float(params["spi_seconds"]) + read_done-begin_read,
+                                              spi_seconds=float(params["spi_seconds"]) + read_done - begin_read,
                                               spi_mini_batch=mini_batch,
                                               batch_size=int(params["rows"])
                                               )

@@ -100,6 +100,19 @@ bash /project/TRAILS/internal/ml/model_selection/scripts/database/load_data_to_d
 bash /project/TRAILS/internal/ml/model_selection/scripts/database/load_data_to_db.sh /project/exp_data/data/structure_data/criteo_full criteo
 ```
 
+## Clearn everything
+
+```
+cargo clean
+rm -r /home/postgres/tmp_basedir_polardb_pg_1100_bld/lib/pg_extension.so
+rm /home/postgres/tmp_basedir_polardb_pg_1100_bld/share/extension/pg_extension.control
+rm /home/postgres/tmp_basedir_polardb_pg_1100_bld/share/extension/pg_extension--0.1.0.sql
+rm /home/postgres/tmp_basedir_polardb_pg_1100_bld/share/extension/pg_extension--0.1.0.sql
+
+```
+
+
+
 ## 1. Compile
 
 In shell
@@ -153,6 +166,12 @@ select benchmark_filtering_latency_in_db(4, 'criteo', 64, '/project/TRAILS/inter
 
 # Test coordinator
 SELECT coordinator('0.08244', '168.830156', '800', false, '/project/TRAILS/internal/ml/model_selection/config.ini');
+
+
+
+
+
+
 
 # this is database name, columns used, time budget, batch size, and config file
 CALL model_selection_sp('dummy', ARRAY['col1', 'col2', 'col3', 'label'], '30', 32, '/project/TRAILS/internal/ml/model_selection/config.ini');
