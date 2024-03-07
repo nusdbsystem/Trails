@@ -2,6 +2,8 @@
 
 ![image-20230702035806963](internal/ml/model_selection/documents/imgs/image-20230702035806963.png)
 
+# System Design
+
 ![image-20230702035806963](internal/ml/model_selection/documents/imgs/ai_db.001.jpeg)
 
 # Build & Run examples
